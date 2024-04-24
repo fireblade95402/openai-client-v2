@@ -48,6 +48,7 @@ UI_CHAT_DESCRIPTION = (
 )
 UI_FAVICON = os.environ.get("UI_FAVICON") or "/favicon.ico"
 UI_SHOW_SHARE_BUTTON = os.environ.get("UI_SHOW_SHARE_BUTTON", "true").lower() == "true"
+UI_SHOW_SYSTEM_PROMPT_BUTTON = os.environ.get("UI_SHOW_SYSTEM_PROMPT_BUTTON", "true").lower() == "true"
 
 
 def create_app():
@@ -261,6 +262,7 @@ frontend_settings = {
         "chat_title": UI_CHAT_TITLE,
         "chat_description": UI_CHAT_DESCRIPTION,
         "show_share_button": UI_SHOW_SHARE_BUTTON,
+        "show_system_prompt_button": UI_SHOW_SYSTEM_PROMPT_BUTTON,
     },
     "sanitize_answer": SANITIZE_ANSWER,
 }
@@ -1371,5 +1373,28 @@ async def generate_title(conversation_messages):
     except Exception as e:
         return messages[-2]["content"]
 
+
+@bp.route("/api/update-system-prompt-message", methods=["POST"])
+async def update_system_prompt_message():
+    global AZURE_OPENAI_SYSTEM_MESSAGE
+
+    request_json = await request.get_json()
+    message = request_json.get("message", None)
+
+    if message == "":
+        message = await os.environ.get("AZURE_OPENAI_SYSTEM_MESSAGE", "You are an AI assistant that helps people find information.")
+    else:
+        AZURE_OPENAI_SYSTEM_MESSAGE = message
+
+    print("SystemPromptMessage [Update]: " + AZURE_OPENAI_SYSTEM_MESSAGE)
+    return {"message": "System message updated"}
+
+@bp.route("/api/get-system-prompt-message", methods=["GET"])
+async def get_system_prompt_message():
+    ##global AZURE_OPENAI_SYSTEM_MESSAGE
+    ## write the system message to the console
+    print("SystemPromptMessage [Get]: " + AZURE_OPENAI_SYSTEM_MESSAGE)
+
+    return {"message": AZURE_OPENAI_SYSTEM_MESSAGE}
 
 app = create_app()
