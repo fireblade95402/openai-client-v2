@@ -49,7 +49,7 @@ UI_CHAT_DESCRIPTION = (
 UI_FAVICON = os.environ.get("UI_FAVICON") or "/favicon.ico"
 UI_SHOW_SHARE_BUTTON = os.environ.get("UI_SHOW_SHARE_BUTTON", "true").lower() == "true"
 UI_SHOW_SYSTEM_PROMPT_BUTTON = os.environ.get("UI_SHOW_SYSTEM_PROMPT_BUTTON", "true").lower() == "true"
-
+UI_SHOW_CONFIG_BUTTON = os.environ.get("UI_SHOW_CONFIG_BUTTON", "true").lower() == "true"
 
 def create_app():
     app = Quart(__name__)
@@ -263,6 +263,7 @@ frontend_settings = {
         "chat_description": UI_CHAT_DESCRIPTION,
         "show_share_button": UI_SHOW_SHARE_BUTTON,
         "show_system_prompt_button": UI_SHOW_SYSTEM_PROMPT_BUTTON,
+        "show_config_button": UI_SHOW_CONFIG_BUTTON,
     },
     "sanitize_answer": SANITIZE_ANSWER,
 }
@@ -1396,5 +1397,77 @@ async def get_system_prompt_message():
     print("SystemPromptMessage [Get]: " + AZURE_OPENAI_SYSTEM_MESSAGE)
 
     return {"message": AZURE_OPENAI_SYSTEM_MESSAGE}
+
+
+## create a configuration object for upodating to environment variables for openai and search
+@bp.route("/api/get-configuration", methods=["GET"])
+async def get_configuration():
+    configuration = {
+        "openai": {
+            "model": AZURE_OPENAI_MODEL,
+            "temperature": AZURE_OPENAI_TEMPERATURE,
+            "top_p": AZURE_OPENAI_TOP_P,
+            "max_tokens": AZURE_OPENAI_MAX_TOKENS,
+            "stop_sequence": AZURE_OPENAI_STOP_SEQUENCE,
+            "system_message": AZURE_OPENAI_SYSTEM_MESSAGE,
+            "model_name": AZURE_OPENAI_MODEL_NAME
+        },
+        "search": {
+            "index": AZURE_SEARCH_INDEX,
+            "top_k": AZURE_SEARCH_TOP_K,
+            "strictness": AZURE_SEARCH_STRICTNESS
+        }
+    }
+
+    ## write the configuration to the console
+    test = {"message": configuration} 
+    print("Configuration [Get]: " + json.dumps(test))
+
+    ## return the configuration object as json
+    return test
+
+## update the configuration object with the environment variables for openai and search
+@bp.route("/api/update-configuration", methods=["POST"])
+async def update_configuration():
+    global AZURE_OPENAI_MODEL
+    global AZURE_OPENAI_TEMPERATURE
+    global AZURE_OPENAI_TOP_P
+    global AZURE_OPENAI_MAX_TOKENS
+    global AZURE_OPENAI_STOP_SEQUENCE
+    global AZURE_OPENAI_SYSTEM_MESSAGE
+    global AZURE_OPENAI_MODEL_NAME
+    global AZURE_SEARCH_INDEX
+    global AZURE_SEARCH_TOP_K
+    global AZURE_SEARCH_STRICTNESS
+
+    ## get the configuration object from the request and convert to json
+    request_json = await request.get_json()
+    configuration = request_json.get("message", None)
+
+    ## make configuration a json object
+    configuration = json.loads(configuration)
+
+    ## write configuration to console
+    print("Configuration [Update]: " + json.dumps(configuration))
+    openai_config = configuration["openai"]
+    search_config = configuration["search"]
+
+    AZURE_OPENAI_MODEL = openai_config["model"]
+    AZURE_OPENAI_TEMPERATURE = openai_config["temperature"]
+    AZURE_OPENAI_TOP_P = openai_config["top_p"]
+    AZURE_OPENAI_MAX_TOKENS = openai_config["max_tokens"]
+    AZURE_OPENAI_STOP_SEQUENCE = openai_config["stop_sequence"]
+    AZURE_OPENAI_SYSTEM_MESSAGE = openai_config["system_message"]
+    AZURE_OPENAI_MODEL_NAME = openai_config["model_name"]
+    AZURE_SEARCH_INDEX = search_config["index"]
+    AZURE_SEARCH_TOP_K = search_config["top_k"]
+    AZURE_SEARCH_STRICTNESS = search_config["strictness"]
+
+    return {"message": "Configuration updated"}
+
+
+
+
+
 
 app = create_app()

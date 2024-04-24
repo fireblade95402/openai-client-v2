@@ -109,7 +109,8 @@ export type UI = {
     logo?: string;
     chat_logo?: string;
     show_share_button?: boolean;
-    show_system_prompt_button?: boolean
+    show_system_prompt_button?: boolean;
+    show_config_button?: boolean
 }
 
 export type FrontendSettings = {

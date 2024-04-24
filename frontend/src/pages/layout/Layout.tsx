@@ -4,7 +4,7 @@ import Contoso from "../../assets/Contoso.svg";
 import { CopyRegular } from "@fluentui/react-icons";
 import { Dialog, Stack, TextField } from "@fluentui/react";
 import { useContext, useEffect, useState } from "react";
-import { HistoryButton, ShareButton, SystemButton } from "../../components/common/Button";
+import { HistoryButton, ShareButton, SystemButton, ConfigButton } from "../../components/common/Button";
 import { AppStateContext } from "../../state/AppProvider";
 import { CosmosDBStatus } from "../../api";
 
@@ -14,6 +14,7 @@ const Layout = () => {
     const [copyText, setCopyText] = useState<string>("Copy URL");
     const [shareLabel, setShareLabel] = useState<string | undefined>("Share");
     const [SystemPromptLabel, setSytemPromptLabel] = useState<string | undefined>("System Prompt");
+    const [ConfigLabel, setConfigLabel] = useState<string | undefined>("Config");
     const [hideHistoryLabel, setHideHistoryLabel] = useState<string>("Hide chat history");
     const [showHistoryLabel, setShowHistoryLabel] = useState<string>("Show chat history");
     const appStateContext = useContext(AppStateContext)
@@ -21,6 +22,57 @@ const Layout = () => {
 
     const handleShareClick = () => {
         setIsSharePanelOpen(true);
+    };
+
+    //Config Panel
+    const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
+    const [updateConfigText, setUpdateConfigText] = useState('Update');
+    const [configText, setConfigText] = useState('');
+
+    const handleConfigPanelDismiss = () => {
+        setIsConfigPanelOpen(false);
+    };
+
+    const handleUpdateConfigClick = async () => {
+        setUpdateConfigText('Updating...');
+        await updateConfig();
+        // Perform update logic here
+        setTimeout(() => {
+            setUpdateConfigText('Update');
+            setIsConfigPanelOpen(false);
+        }, 2000);
+    };
+
+    const getConfig = async () => {
+        const response = await fetch('/api/get-configuration', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const data = await response.json();
+        return data.message;
+    };
+
+    const updateConfig = async () => {
+        const response = await fetch('/api/update-configuration', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: configText }),
+        });
+        const data = await response.json();
+        return data.message;
+    };
+
+    const handleConfigClick = async () => {
+        const message = await getConfig();
+
+        // convert message from json to string
+        const messageString = JSON.stringify(message);
+        setConfigText(messageString);
+        setIsConfigPanelOpen(true);
     };
 
     //System Prompt Panel
@@ -133,6 +185,7 @@ const Layout = () => {
                         }
                         {ui?.show_share_button && <ShareButton onClick={handleShareClick} text={shareLabel} />}
                         {ui?.show_system_prompt_button && <SystemButton onClick={handleSystemPromptClick} text={SystemPromptLabel} />}
+                        {ui?.show_config_button && <ConfigButton onClick={handleConfigClick} text={ConfigLabel} />}
                     </Stack>
                 </Stack>
             </header>
@@ -185,6 +238,61 @@ const Layout = () => {
                     >
                         <CopyRegular />
                         <span className={styles.ButtonText}>{updateSystemPromptText}</span>
+                    </div>
+                </Stack>
+            </Dialog>
+
+            <Dialog
+                onDismiss={handleConfigPanelDismiss}
+                hidden={!isConfigPanelOpen}
+                styles={{
+                    main: [
+                        {
+                            selectors: {
+                                ['@media (min-width: 480px)']: {
+                                    maxWidth: '2500px',
+                                    background: '#FFFFFF',
+                                    boxShadow:
+                                        '0px 14px 28.8px rgba(0, 0, 0, 0.24), 0px 0px 8px rgba(0, 0, 0, 0.2)',
+                                    borderRadius: '8px',
+                                    maxHeight: '400px',
+                                    minHeight: '100px',
+                                },
+                            },
+                        },
+                    ],
+                }}
+                dialogContentProps={{
+                    title: 'Configuration',
+                    showCloseButton: true,
+                }}
+            >
+                <Stack horizontal verticalAlign="center" style={{ gap: '8px' }}>
+                    <TextField
+                        multiline
+                        rows={10}
+                        // format value to pretty json and remove slashes
+                        value={configText.replace(/\\/g, '').replace(/"{/g, '{').replace(/}"/g, '}').replace(/,"/g, ', "')}
+
+
+
+                        onChange={(e) => {
+                            const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+                            setConfigText(target.value);
+                        }}
+                    />
+                    <div
+                        className={styles.copyButtonContainer}
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Update"
+                        onClick={handleUpdateConfigClick}
+                        onKeyDown={(e) =>
+                            e.key === 'Enter' || e.key === ' ' ? handleUpdateConfigClick() : null
+                        }
+                    >
+                        <CopyRegular />
+                        <span className={styles.ButtonText}>{updateConfigText}</span>
                     </div>
                 </Stack>
             </Dialog>

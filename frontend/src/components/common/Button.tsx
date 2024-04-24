@@ -31,6 +31,47 @@ export const HistoryButton: React.FC<ButtonProps> = ({ onClick, text }) => {
  
 }
 
+
+interface ConfigButtonProps extends IButtonProps {
+  onClick: () => void;
+}
+
+export const ConfigButton: React.FC<ConfigButtonProps> = ({onClick}) => {
+  const ConfigButtonStyles: ICommandBarStyles & IButtonStyles = {
+      root: {
+        width: 86,
+        height: 32,
+        borderRadius: 4,
+        background: 'radial-gradient(109.81% 107.82% at 100.1% 90.19%, #175ea1 33.63%, #4F88BD 70.31%, #b3d6f3 100%)',
+      //   position: 'absolute',
+      //   right: 20,
+        padding: '5px 12px',
+        marginRight: '20px'
+      },
+      icon: {
+        color: '#FFFFFF',
+      },
+      rootHovered: {
+        background: 'linear-gradient(135deg, #b3d6f3 0%, #4F88BD 51.04%, #175ea1 100%)',
+      },
+      label: {
+        fontWeight: 600,
+        fontSize: 14,
+        lineHeight: '20px',
+        color: '#FFFFFF',
+      },
+    };
+
+    return (
+      <CommandBarButton
+              styles={ConfigButtonStyles}
+              iconProps={{ iconName: 'Settings'  }}
+              onClick={onClick}
+              text="Config"
+      />
+    )
+}
+
 interface SystemButtonProps extends IButtonProps {
   onClick: () => void;
 }
