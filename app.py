@@ -1376,7 +1376,7 @@ async def generate_title(conversation_messages):
 
 
 @bp.route("/api/update-system-prompt-message", methods=["POST"])
-async def update_system_prompt_message():
+def update_system_prompt_message():
     global AZURE_OPENAI_SYSTEM_MESSAGE
 
     request_json = await request.get_json()
@@ -1391,7 +1391,7 @@ async def update_system_prompt_message():
     return {"message": "System message updated"}
 
 @bp.route("/api/get-system-prompt-message", methods=["GET"])
-async def get_system_prompt_message():
+def get_system_prompt_message():
     global AZURE_OPENAI_SYSTEM_MESSAGE
     ## write the system message to the console
     print("SystemPromptMessage [Get]: " + AZURE_OPENAI_SYSTEM_MESSAGE)
