@@ -1392,7 +1392,7 @@ async def update_system_prompt_message():
 
 @bp.route("/api/get-system-prompt-message", methods=["GET"])
 async def get_system_prompt_message():
-    ##global AZURE_OPENAI_SYSTEM_MESSAGE
+    global AZURE_OPENAI_SYSTEM_MESSAGE
     ## write the system message to the console
     print("SystemPromptMessage [Get]: " + AZURE_OPENAI_SYSTEM_MESSAGE)
 
@@ -1402,6 +1402,16 @@ async def get_system_prompt_message():
 ## create a configuration object for upodating to environment variables for openai and search
 @bp.route("/api/get-configuration", methods=["GET"])
 async def get_configuration():
+    global AZURE_OPENAI_MODEL
+    global AZURE_OPENAI_TEMPERATURE
+    global AZURE_OPENAI_TOP_P
+    global AZURE_OPENAI_MAX_TOKENS
+    global AZURE_OPENAI_STOP_SEQUENCE
+    global AZURE_OPENAI_SYSTEM_MESSAGE
+    global AZURE_OPENAI_MODEL_NAME
+    global AZURE_SEARCH_INDEX
+    global AZURE_SEARCH_TOP_K
+    global AZURE_SEARCH_STRICTNESS
     configuration = {
         "openai": {
             "model": AZURE_OPENAI_MODEL,
